@@ -4,7 +4,7 @@
 > ML platform for P&C insurance. Written for someone new to AWS and Terraform.
 > Designed to be handed to a client engineering team as an implementation spec.
 >
-> **Region:** `us-east-1` · **Target cost:** ~$16/month · **Build time:** ~11 working days
+> **Region:** `us-east-2` · **Target cost:** ~$16/month · **Build time:** ~11 working days
 >
 > Open this folder in VSCode with the Claude Code extension. Everything referenced here
 > lives in this repo.
@@ -322,7 +322,7 @@ default (All features). This is free.
 **Step 2 — Enable IAM Identity Center**
 
 Console → search **IAM Identity Center** → **Enable**. Choose the region
-**`us-east-1`**. Identity Center itself is free.
+**`us-east-2`**. Identity Center itself is free.
 
 You will be given a **portal URL** like `https://d-1234567890.awsapps.com/start`.
 Save it — this is how you sign in from now on. You can customise the subdomain under
@@ -385,7 +385,7 @@ Everything below must be true before you write a line of Terraform.
 - [ ] Root MFA registered, two devices
 - [ ] Root has no access keys
 - [ ] AWS Organizations enabled
-- [ ] IAM Identity Center enabled in `us-east-1`, portal URL saved
+- [ ] IAM Identity Center enabled in `us-east-2`, portal URL saved
 - [ ] `avenugopal@premiumiq.com` created with `AdministratorAccess`, MFA enforced
 - [ ] Signed in successfully as that user
 - [ ] IAM access to billing activated
@@ -416,7 +416,7 @@ Everything below must be true before you write a line of Terraform.
 Your **$200 in credits covers roughly the first twelve months** at that burn rate.
 After month 12 the RDS free tier ends and adds ~$14/month.
 
-### Reference pricing (us-east-1, on-demand)
+### Reference pricing (us-east-2, on-demand)
 
 | Item | Rate |
 |---|---|
@@ -487,7 +487,7 @@ terraform destroy   # tear it all down
 
 | Noun | Meaning | Example |
 |---|---|---|
-| `provider` | Which cloud | `provider "aws" { region = "us-east-1" }` |
+| `provider` | Which cloud | `provider "aws" { region = "us-east-2" }` |
 | `resource` | A thing that exists | An S3 bucket, a database, an IAM role |
 | `variable` | Something changeable without editing code | Environment name, instance size |
 | `module` | A reusable bundle of resources | `modules/storage` |
@@ -543,14 +543,14 @@ Answer:
 |---|---|
 | SSO session name | `piq` |
 | SSO start URL | your portal URL from §4.4 |
-| SSO region | `us-east-1` |
+| SSO region | `us-east-2` |
 | SSO registration scopes | press Enter for the default |
 
 A browser opens — approve the request. Then:
 
 | Prompt | Value |
 |---|---|
-| CLI default client Region | `us-east-1` |
+| CLI default client Region | `us-east-2` |
 | CLI default output format | `json` |
 | CLI profile name | `piq-lab` |
 
@@ -580,7 +580,7 @@ cost discipline survives contact with a deadline.
 # PremiumIQ ML Platform Lab
 
 AWS lab demonstrating a governed ML platform for P&C insurance.
-Region us-east-1. Target cost under $50/month.
+Region us-east-2. Target cost under $50/month.
 
 ## Rules
 
@@ -685,7 +685,7 @@ resource "aws_s3_bucket_public_access_block" "tfstate" {
 variable "region" {
   description = "AWS region for the lab"
   type        = string
-  default     = "us-east-1"
+  default     = "us-east-2"
 }
 ```
 
@@ -715,7 +715,7 @@ terraform {
   backend "s3" {
     bucket       = "piq-mlplatform-tfstate-XXXXXXXX"  # <- paste the output here
     key          = "lab/terraform.tfstate"
-    region       = "us-east-1"
+    region       = "us-east-2"
     encrypt      = true
     use_lockfile = true    # native S3 locking, Terraform 1.11+. No DynamoDB table needed.
   }
@@ -776,7 +776,7 @@ module "observability" {
 ```hcl
 variable "region" {
   type    = string
-  default = "us-east-1"
+  default = "us-east-2"
 }
 
 variable "env" {
@@ -892,7 +892,7 @@ threshold to **$10**. This is free.
 
 **CloudWatch billing alarm — $25**
 
-The `EstimatedCharges` metric publishes **only in us-east-1**. Enable billing alerts
+The `EstimatedCharges` metric publishes **only in us-east-2**. Enable billing alerts
 in Billing preferences first, then create an alarm at $25 wired to SNS → your phone.
 10 alarms are free.
 
