@@ -1,0 +1,22 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!example.tfvars
+crash.log
+.terraform.lock.hcl
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Data — never commit generated data
+data/
+*.parquet
+*.csv
+
+# OS
+.DS_Store
