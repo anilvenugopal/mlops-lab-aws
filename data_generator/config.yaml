@@ -1,0 +1,111 @@
+# Synthetic P&C data generator — configuration
+# Every number here is tunable. Defaults are calibrated to published US personal
+# auto experience; see README.md for sources and caveats.
+
+seed: 20260929
+
+# ---------------------------------------------------------------- time window
+start_date: "2023-09-01"
+end_date:   "2026-09-01"     # claims after this would have no label maturity at all
+
+# ------------------------------------------------------------------- volumes
+n_customers: 50000
+n_policies:  80000           # customers renew, so > n_customers
+n_vehicles:  95000
+n_claims:    12000
+
+# ------------------------------------------------------------------- states
+# weight = share of the book. tlt = total loss threshold (repair/ACV above which
+# the vehicle is declared a total loss). These are real statutory thresholds.
+states:
+  MA: {weight: 0.34, tlt: 0.75}
+  CT: {weight: 0.16, tlt: 0.75}
+  NJ: {weight: 0.20, tlt: 0.75}
+  NH: {weight: 0.10, tlt: 0.75}
+  PA: {weight: 0.20, tlt: 0.80}
+
+# ------------------------------------------------- INJECTED FLAW 1: concept drift
+# A state changes its statutory total loss threshold. Same input features,
+# different outcome. This is PURE concept drift: P(Y|X) moves, P(X) does not.
+# It is the kind a feature-drift monitor cannot see.
+# Magnitude is deliberately larger than a typical statutory move so the effect is
+# visible at lab data volumes. Real thresholds range 50-100% across US states.
+tlt_change:
+  enabled: true
+  state: MA
+  effective_date: "2026-03-01"
+  new_tlt: 0.60              # from 0.75 — more vehicles become total losses
+
+# -------------------------------------------- INJECTED FLAW 2: stale valuations
+# For a slice of claims the ACV current at FNOL is understated, and is corrected
+# a few days later. This is what makes the root-cause demo work: replay the
+# feature today and you get a different value than the model actually saw.
+stale_acv:
+  enabled: true
+  share_of_claims: 0.03
+  understate_pct: [0.10, 0.25]
+  correction_lag_days: [2, 5]
+
+# ------------------------------------------------ INJECTED FLAW 3: missing data
+missingness:
+  mileage_missing_share: 0.20      # unknown mileage — informative for older cars
+  photos_never_uploaded_share: 0.22
+
+# ------------------------------------------- INJECTED FLAW 4: reviewer behaviour
+# Adjusters override the model. Some are right, some are not. December overrides
+# spike for business reasons, which reads as model decay if you are not careful.
+adjuster:
+  n_adjusters: 24
+  base_override_rate: 0.18
+  december_override_multiplier: 1.8
+  # of overrides, how they attribute the cause
+  reason_mix:
+    feature: 0.35      # "the ACV looks wrong"
+    model:   0.30      # "score is too harsh"
+    process: 0.35      # policy exception, goodwill, missing document
+  # how often the overriding adjuster turns out to be wrong
+  adjuster_wrong_rate: 0.30
+
+# ------------------------------------------------------------------ economics
+vehicle:
+  model_year_range: [2012, 2026]
+  msrp_by_segment:
+    economy: [18000, 28000]
+    mid:     [28000, 45000]
+    luxury:  [45000, 85000]
+  segment_mix: {economy: 0.45, mid: 0.42, luxury: 0.13}
+  annual_depreciation: 0.13
+  floor_value_pct: 0.12            # a car never values below this share of MSRP
+
+claim:
+  cause_mix:
+    collision:  0.52
+    comprehensive: 0.23
+    glass:      0.12
+    theft:      0.05
+    animal:     0.08
+  # repair cost as a share of ACV, lognormal per severity band (1..5)
+  repair_ratio_mu:    [-2.30, -1.70, -1.15, -0.62, -0.25]
+  repair_ratio_sigma: [0.55, 0.60, 0.62, 0.58, 0.50]
+  supplement_share: 0.30           # claims that get a supplement
+  supplement_uplift: [0.20, 0.60]  # supplement adds this share of the estimate
+  at_fault_share: 0.45
+  injury_share: 0.11
+
+subrogation:
+  share_of_not_at_fault: 0.35
+  recovery_pct: [0.60, 0.90]
+  lag_days: [120, 400]             # this is what makes the 365-day label differ
+
+# ----------------------------------------------------------------- simulated
+# The photo damage score stands in for a vision model. Correlated with true
+# damage plus noise. Treated as a model output feeding another model, which is
+# what creates the model-dependency edge in the governance metamodel.
+photo_model:
+  noise_sd: 0.12
+  bias_drift_after: "2026-07-01"   # the vision model itself degrades late in the window
+  bias_drift_amount: 0.06
+
+output:
+  dir: "./out"
+  format: parquet                  # parquet | csv | both

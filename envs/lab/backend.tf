@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket       = "piq-mlplatform-tfstate-XXXXXXXX"  # <- paste the output here
+    bucket       = "piq-mlplatform-tfstate-eb27dc12"
     key          = "lab/terraform.tfstate"
     region       = "us-east-2"
     encrypt      = true

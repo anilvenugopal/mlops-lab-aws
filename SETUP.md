@@ -469,7 +469,7 @@ should exist, commit them to git, and run a command. AWS ends up matching the fi
 
 **Why it matters here, in order:**
 
-1. **The code is the specification.** Plymouth Rock's team reads the Terraform and knows exactly what to build. No ambiguity.
+1. **The code is the specification.** An infra team reads the Terraform and knows exactly what to build. No ambiguity.
 2. **`terraform destroy` is your cost control.** One command removes everything; rebuild in fifteen minutes. Worth more than any budget alarm.
 3. **Changes are reviewable** — infrastructure arrives as pull requests.
 
@@ -1042,8 +1042,7 @@ git commit -am "Add DynamoDB online store module"
 git push
 ```
 
-Putting the `plan` output in the pull request is the practice Plymouth Rock's team
-will recognise, and it is the same review discipline we are proposing for feature
+Putting the `plan` output in the pull request is the same review discipline we are proposing for feature
 definitions.
 
 ---
