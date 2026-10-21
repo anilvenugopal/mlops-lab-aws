@@ -20,3 +20,7 @@ data/
 
 # OS
 .DS_Store
+
+# Local environment config — holds machine-specific ports/passwords
+.env
+!.env.example
